@@ -19,6 +19,7 @@ public class BotController {
 
     @GetMapping("/user/{id}")
     public String showUserPage(@PathVariable Long id, Model model){
+        telegramBotService.authenticate(id);
         model.addAttribute("telegram_user", telegramBotService.findUserById(id));
         return "user_page";
     }

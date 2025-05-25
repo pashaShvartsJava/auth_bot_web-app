@@ -16,4 +16,9 @@ public class TelegramBotService {
     public TelegramUser findUserById(Long id) {
         return telegramBotRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    public void authenticate(Long id) {
+        TelegramUser telegramUser = findUserById(id);
+
+    }
 }
