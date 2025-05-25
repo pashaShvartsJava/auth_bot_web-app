@@ -26,12 +26,11 @@
 <h1>Информация о пользователе</h1>
 
 <div class="user-info">
-    <p><span class="label">ID:</span> <span th:text="${telegram_user.id}"></span></p>
-    <p><span class="label">Имя:</span> <span th:text="${telegram_user.name}"></span></p>
-    <p><span class="label">Username:</span> <span th:text="${telegram_user.username}"></span></p>
-    <p><span class="label">User ID:</span> <span th:text="${telegram_user.user_id}"></span></p>
-    <p><span class="label">Chat ID:</span> <span th:text="${telegram_user.chat_id}"></span></p>
-    <p><span class="label">Дата авторизации:</span> <span th:text="${telegram_user.auth_date}"></span></p>
+    <p><span class="label">Name:</span> <span th:text="${user.name}"></span></p>
+    <p><span class="label">Lastname:</span> <span th:text="${user.lastname}"></span></p>
+    <p><span class="label">Username:</span> <span th:text="${user.username}"></span></p>
+    <p><span class="label">User ID:</span> <span th:text="${user.user_id}"></span></p>
+    <p><span class="label">Дата авторизации:</span> <span th:text="${user.auth_date}"></span></p>
 </div>
 </body>
 </html>

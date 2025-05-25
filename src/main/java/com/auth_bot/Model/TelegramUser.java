@@ -10,17 +10,17 @@ public class TelegramUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Column(unique = true, nullable = false)
     private String username;
 
+    @Column(name = "lastname")
+    private String lastname;
+
     @Column(unique = true, nullable = false, name = "user_id")
     private Long user_id;
-
-    @Column(unique = true, nullable = false, name = "chat_id")
-    private Long chat_id;
 
     @Column(unique = true, nullable = false, name = "auth_date")
     private String auth_date;
@@ -31,14 +31,23 @@ public class TelegramUser {
     public TelegramUser() {
     }
 
-    public TelegramUser(Long id, String name, String username, Long chat_id, String auth_date, String hash, Long user_id) {
+    public TelegramUser(Long id, String name, String username, String lastname,
+                        String auth_date, String hash, Long user_id) {
         this.id = id;
         this.name = name;
         this.username = username;
-        this.chat_id = chat_id;
+        this.lastname = lastname;
         this.auth_date = auth_date;
         this.hash = hash;
         this.user_id = user_id;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
     public Long getUser_id() {
@@ -63,14 +72,6 @@ public class TelegramUser {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public Long getChat_id() {
-        return chat_id;
-    }
-
-    public void setChat_id(Long chat_id) {
-        this.chat_id = chat_id;
     }
 
     public String getAuth_date() {

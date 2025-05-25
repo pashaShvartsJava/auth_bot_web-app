@@ -1,5 +1,6 @@
 package com.auth_bot.Config;
 
+import com.auth_bot.Model.TelegramUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -11,9 +12,13 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.webapp.WebAppInfo;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
@@ -24,11 +29,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Value("${telegrambots.bots.token}")
     private String BOT_TOKEN;
 
+    private String hash;
+
     @Override
     public void onUpdateReceived(Update update) {
-        
-
-        Map<String, String> data = new HashMap<>();
         if(update.hasMessage() && update.getMessage().hasText()) {
             String chatId = update.getMessage().getChatId().toString();
             String text = update.getMessage().getText();
@@ -38,7 +42,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 message.setText("Нажми кнопку ниже, чтобы открыть приложение:");
 
                 KeyboardButton webAppButton = new KeyboardButton("Открыть WebApp");
-                webAppButton.setWebApp(new WebAppInfo("http://localhost:8080/bot/user/{id}"));
+                webAppButton.setWebApp(new WebAppInfo("http://localhost:8080/bot/webapp"));
 
                 KeyboardRow row = new KeyboardRow();
                 row.add(webAppButton);
@@ -54,6 +58,43 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
     }
+
+    public boolean authenticateUser(String initData) throws NoSuchAlgorithmException, InvalidKeyException {
+        String[] dataStrings = initData.split("&");
+        for (int i = 0; i < dataStrings.length-1; i++) {
+            if(dataStrings[i].startsWith("hash")) {
+                hash = dataStrings[i].substring(5);
+            }
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i <dataStrings.length ; i++) {
+            if(i==dataStrings.length-1) {
+                stringBuilder.append(dataStrings[i]);
+            } else if (dataStrings[i].startsWith("hash")) {
+                i++;
+            }
+            stringBuilder.append(dataStrings[i]).append("\n");
+        }
+        String init_data_without_hash = stringBuilder.toString();
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] secretKey = digest.digest(BOT_TOKEN.getBytes(StandardCharsets.UTF_8));
+
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(secretKey, "HmacSHA256"));
+
+        String generatedHash = bytesToHex(mac.doFinal(init_data_without_hash.getBytes(StandardCharsets.UTF_8)));
+        return generatedHash.equals(hash);
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
 
     public void executeMessage(SendMessage message) {
         try {
