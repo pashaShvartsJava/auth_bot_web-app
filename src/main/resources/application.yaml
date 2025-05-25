@@ -1,3 +1,19 @@
-spring.application.name=auth-bot
+spring:
+  application:
+    name: auth-bot
 
-spring.datasource.url=jdbc
+  datasource:
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/auth_bot_db
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+
+telegrambots:
+  bots:
+    username: authentication_t_bot
+    token: 7641740982:AAEkkEu_1BVOJYOVVMEvmYpgnPuUkm2LMvM
