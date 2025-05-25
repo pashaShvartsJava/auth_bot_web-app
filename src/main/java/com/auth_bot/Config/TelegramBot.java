@@ -33,7 +33,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 message.setText("Нажми кнопку ниже, чтобы открыть приложение:");
 
                 KeyboardButton webAppButton = new KeyboardButton("Открыть WebApp");
-                webAppButton.setWebApp(new WebAppInfo(""));
+                webAppButton.setWebApp(new WebAppInfo("http://localhost:8080/bot/user/{id}"));
 
                 KeyboardRow row = new KeyboardRow();
                 row.add(webAppButton);
