@@ -1,6 +1,5 @@
 package com.auth_bot.Config;
 
-import com.auth_bot.Model.TelegramUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -14,11 +13,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
@@ -59,40 +58,51 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    public boolean authenticateUser(String initData) throws NoSuchAlgorithmException, InvalidKeyException {
-        String[] dataStrings = initData.split("&");
-        for (int i = 0; i < dataStrings.length-1; i++) {
-            if(dataStrings[i].startsWith("hash")) {
-                hash = dataStrings[i].substring(5);
-            }
+    public  boolean authenticateUser(String initData) {
+        try {
+            Map<String, String> params = parseInitData(initData);
+            String receivedHash = params.remove("hash");
+
+            String dataCheckString = params.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .map(e -> e.getKey() + "=" + e.getValue())
+                    .collect(Collectors.joining("\n"));
+
+            byte[] secretKey = MessageDigest.getInstance("SHA-256")
+                    .digest(BOT_TOKEN.getBytes(StandardCharsets.UTF_8));
+
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(secretKey, "HmacSHA256"));
+            byte[] hmac = mac.doFinal(dataCheckString.getBytes(StandardCharsets.UTF_8));
+
+            String calculatedHash = bytesToHex(hmac);
+
+            return calculatedHash.equalsIgnoreCase(receivedHash);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i <dataStrings.length ; i++) {
-            if(i==dataStrings.length-1) {
-                stringBuilder.append(dataStrings[i]);
-            } else if (dataStrings[i].startsWith("hash")) {
-                i++;
-            }
-            stringBuilder.append(dataStrings[i]).append("\n");
-        }
-        String init_data_without_hash = stringBuilder.toString();
-
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] secretKey = digest.digest(BOT_TOKEN.getBytes(StandardCharsets.UTF_8));
-
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(new SecretKeySpec(secretKey, "HmacSHA256"));
-
-        String generatedHash = bytesToHex(mac.doFinal(init_data_without_hash.getBytes(StandardCharsets.UTF_8)));
-        return generatedHash.equals(hash);
     }
 
-    public static String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
+    private  Map<String, String> parseInitData(String initData) {
+        Map<String, String> result = new HashMap<>();
+        for (String pair : initData.split("&")) {
+            int index = pair.indexOf("=");
+            if (index > 0) {
+                String key = pair.substring(0, index);
+                String value = URLDecoder.decode(pair.substring(index + 1), StandardCharsets.UTF_8);
+                result.put(key, value);
+            }
         }
-        return sb.toString();
+        return result;
+    }
+
+    private  String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            hexString.append(String.format("%02x", b & 0xff));
+        }
+        return hexString.toString();
     }
 
 
