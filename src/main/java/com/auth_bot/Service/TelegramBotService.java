@@ -6,8 +6,9 @@ import com.auth_bot.Model.TelegramUser;
 import com.auth_bot.Repository.TelegramBotRepository;
 import org.springframework.stereotype.Service;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 @Service
 public class TelegramBotService {
@@ -25,7 +26,7 @@ public class TelegramBotService {
         return telegramBotRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public boolean authenticate(String initData) throws NoSuchAlgorithmException, InvalidKeyException {
+    public boolean authenticate(String initData){
         return telegramBot.authenticateUser(initData);
     }
 
@@ -33,14 +34,26 @@ public class TelegramBotService {
         return telegramBotRepository.save(wrapToEntity(userDTO));
     }
 
-    private TelegramUser wrapToEntity(TelegramUserDTO userDTO) {
-        TelegramUser telegramUser = new TelegramUser();
-        telegramUser.setName(userDTO.getName());
-        telegramUser.setLastname(userDTO.getLastname());
-        telegramUser.setUsername(userDTO.getUsername());
-        telegramUser.setUser_id(userDTO.getUser_id());
-        telegramUser.setAuth_date(userDTO.getAuth_date());
-        telegramUser.setHash(userDTO.getHash());
-        return telegramUser;
+    public TelegramUser wrapToEntity(TelegramUserDTO userDTO) {
+        TelegramUser user = new TelegramUser();
+        String initData = userDTO.getInitData();
+        String[] params = initData.split("&");
+        for (String param : params) {
+            String[] keyValue = param.split("=", 2);
+            if (keyValue.length == 2) {
+                String key = keyValue[0];
+                String value = URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8);
+                switch (key) {
+                    case "id": user.setUser_id(Long.valueOf(value)); break;
+                    case "first_name": user.setName(value); break;
+                    case "last_name": user.setLastname(value); break;
+                    case "username": user.setUsername(value); break;
+                    case "auth_date": user.setAuth_date(value); break;
+                    case "hash": user.setHash(value); break;
+                }
+            }
+        }
+        return user;
     }
+
 }

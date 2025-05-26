@@ -6,10 +6,6 @@ import com.auth_bot.Service.TelegramBotService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 @RequestMapping("/bot")
@@ -35,7 +31,8 @@ public class BotController {
 
     @PostMapping("/auth")
     @ResponseBody
-    public Map<String, Object> authenticate(@RequestBody TelegramUserDTO user) throws Exception {
+    public Map<String, Object> authenticate(@RequestBody TelegramUserDTO user) {
+        System.out.println("DTO " + user);
         TelegramUser telegramUser = telegramBotService.save(user);
         if (telegramBotService.authenticate(user.getInitData())) {
             return Map.of("redirect", "/bot/user?id=" + telegramUser.getId());
@@ -43,6 +40,4 @@ public class BotController {
             return Map.of("redirect", "/error");
         }
     }
-
-
 }
