@@ -13,7 +13,6 @@ spring:
     hibernate:
       ddl-auto: none
 
-telegrambots:
-  bots:
+bot:
     username: authentication_t_bot
     token: 7641740982:AAEkkEu_1BVOJYOVVMEvmYpgnPuUkm2LMvM

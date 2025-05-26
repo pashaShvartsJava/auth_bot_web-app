@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
-    @Value("${telegrambots.bots.username}")
+    @Value("${bot.username}")
     private String BOT_USERNAME;
 
-    @Value("${telegrambots.bots.token}")
+    @Value("${bot.token}")
     private String BOT_TOKEN;
 
     private String hash;
@@ -41,7 +41,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 message.setText("Нажми кнопку ниже, чтобы открыть приложение:");
 
                 KeyboardButton webAppButton = new KeyboardButton("Открыть WebApp");
-                webAppButton.setWebApp(new WebAppInfo("http://localhost:8080/bot/webapp"));
+                webAppButton.setWebApp(new WebAppInfo("https://d3bc-193-148-48-160.ngrok-free.app/bot/webapp"));
 
                 KeyboardRow row = new KeyboardRow();
                 row.add(webAppButton);
